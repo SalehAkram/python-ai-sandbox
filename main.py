@@ -14,24 +14,41 @@ class Game:
         self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
         pygame.display.set_caption("Simple Maze")
 
+        self.goal_position = (6, 7)
         # Create the maze and agent
-        self.maze = Maze(self.WIDTH, self.HEIGHT)
-        self.agent = Agent((1, 3), (6, 7))
+        self.maze = Maze(self.WIDTH, self.HEIGHT, self.goal_position)
+        cell_width = self.WIDTH // len(self.maze.cells[0])
+        cell_height = self.HEIGHT // len(self.maze.cells)
+        self.agent = Agent((1, 3), self.goal_position, cell_width, cell_height)
+
+    def handle_events(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    self.agent.move_up()
+                elif event.key == pygame.K_DOWN:
+                    self.agent.move_down()
+                elif event.key == pygame.K_LEFT:
+                    self.agent.move_left()
+                elif event.key == pygame.K_RIGHT:
+                    self.agent.move_right()
+        return True
+
+    def update_screen(self):
+        self.screen.fill(self.BLACK)
+        self.maze.draw(self.screen)
+        cell_width = self.WIDTH // len(self.maze.cells[0])
+        cell_height = self.HEIGHT // len(self.maze.cells)
+        self.agent.draw(self.screen, cell_width, cell_height)
+        pygame.display.flip()
 
     def run(self):
         running = True
         while running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-
-            self.screen.fill(self.BLACK)
-            self.maze.draw(self.screen)
-            cell_width = self.WIDTH // len(self.maze.cells[0])
-            cell_height = self.HEIGHT // len(self.maze.cells)
-            self.agent.draw(self.screen, cell_width, cell_height)
-
-            pygame.display.flip()
+            running = self.handle_events()
+            self.update_screen()
 
         pygame.quit()
 
