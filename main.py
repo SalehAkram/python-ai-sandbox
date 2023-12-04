@@ -19,7 +19,7 @@ class Game:
         self.maze = Maze(self.WIDTH, self.HEIGHT, self.goal_position)
         cell_width = self.WIDTH // len(self.maze.cells[0])
         cell_height = self.HEIGHT // len(self.maze.cells)
-        self.agent = Agent((1, 3), self.goal_position, cell_width, cell_height)
+        self.agent = Agent((1, 1), self.goal_position, cell_width, cell_height)
 
     def handle_events(self):
         for event in pygame.event.get():
@@ -27,13 +27,13 @@ class Game:
                 return False
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
-                    self.agent.move_up()
+                    self.agent.move_up(self.maze)
                 elif event.key == pygame.K_DOWN:
-                    self.agent.move_down()
+                    self.agent.move_down(self.maze)
                 elif event.key == pygame.K_LEFT:
-                    self.agent.move_left()
+                    self.agent.move_left(self.maze)
                 elif event.key == pygame.K_RIGHT:
-                    self.agent.move_right()
+                    self.agent.move_right(self.maze)
         return True
 
     def update_screen(self):
