@@ -45,9 +45,18 @@ class Game:
         pygame.display.flip()
 
     def run(self):
+        clock = pygame.time.Clock()
         running = True
+        time_passed = 0
+        max_steps = 100
         while running:
             running = self.handle_events()
+            dt = clock.tick(60)
+            time_passed += dt
+            while time_passed >= 100 and self.agent.is_alive and self.agent.steps_taken < max_steps:
+                self.agent.think(self.maze)
+                time_passed -= 100
+
             self.update_screen()
 
         pygame.quit()

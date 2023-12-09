@@ -1,0 +1,39 @@
+def run(self):
+    clock = pygame.time.Clock()
+    running = True
+    time_passed = 0
+    max_steps = 100
+    while running:
+        running = self.handle_events()
+        dt = clock.tick(60)
+        time_passed += dt
+        while time_passed >= 100 and self.agent.is_alive and self.agent.steps_taken < max_steps:
+            self.agent.think(self.maze)
+            time_passed -= 100
+
+        self.update_screen()
+
+    pygame.quit()
+
+
+
+dt = clock.tick(60): This line measures the time passed since the last frame (in milliseconds) and limits the frame
+rate to 60 FPS (frames per second). It returns the time passed as dt.
+
+clock.tick(60) is a method in the Pygame library that's commonly used to regulate the frame rate or frame rendering
+speed in a game. It ensures that the game loop runs at a consistent speed, which is typically measured in frames
+per second (FPS).
+
+The argument 60 represents the desired frame rate, indicating that you want the game loop to run at 60 FPS.
+When you call clock.tick(60), Pygame calculates the time that has passed since the last call to this method.
+It measures the time elapsed between each call.
+It then waits or delays the loop for a specific time to achieve the desired frame rate.
+If less than the desired time has passed since the last call, it adds a delay to make the loop pause briefly before
+starting the next frame.
+
+In essence, clock.tick(60) adjusts the speed of the game loop by controlling the time between each iteration
+of the loop. This way, it limits the frame rate to 60 FPS by ensuring that each iteration of the loop takes roughly
+the same amount of time.
+
+If a computer can't render frames at the desired rate due to hardware limitations or complex game logic,
+clock.tick(60) will adjust the delay between frames to maintain a consistent frame rate as close to 60 FPS as possible.
