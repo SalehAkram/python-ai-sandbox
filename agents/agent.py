@@ -13,8 +13,32 @@ class Agent:
 
     def think(self, maze):
         movements = [self.move_up, self.move_down, self.move_left, self.move_right]
-        random_movement = random.choice(movements)
-        random_movement(maze)
+        ray_cast_inputs = self.ray_cast_inputs(maze)
+        print(ray_cast_inputs)
+        # random_movement = random.choice(movements)
+        # random_movement(maze)
+
+    def cast_ray(self, maze, dx, dy):
+        y, x = self.position
+        max_steps = max(len(maze.cells[0]), len(maze.cells[1]))  # Maximum steps to prevent infinite loops
+
+        for step in range(max_steps):
+            x += dx
+            y += dy
+
+            if x < 0 or y < 0 or x >= len(maze.cells[1]) or y >= len(maze.cells[0]) or maze.cells[y][x] == 1:
+                return step  # Return the number of steps until collision or maze boundary
+
+        return max_steps  # Return max_steps if no collision detected within the limit
+
+    def ray_cast_inputs(self, maze):
+        inputs = [
+            self.cast_ray(maze, -1, 0),  # Left
+            self.cast_ray(maze, 1, 0),  # Right
+            self.cast_ray(maze, 0, -1),  # Up
+            self.cast_ray(maze, 0, 1)  # Down
+        ]
+        return inputs
 
     def draw(self, screen, cell_width, cell_height):
         red = (255, 0, 0)
