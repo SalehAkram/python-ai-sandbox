@@ -17,6 +17,7 @@ class Agent:
         print(ray_cast_inputs)
         # random_movement = random.choice(movements)
         # random_movement(maze)
+        #todo
 
     def cast_ray(self, maze, dx, dy):
         y, x = self.position
