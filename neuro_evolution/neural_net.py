@@ -4,7 +4,6 @@ from scipy.special import expit as sigmoid
 
 
 class NeuralNetwork(AbstractNeuralNetwork):
-
     def __init__(self, input_size: int, hidden_size: int, output_size: int):
         self._input_size = input_size
         self._hidden_size = hidden_size
