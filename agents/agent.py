@@ -6,18 +6,19 @@ class Agent:
     def __init__(self, start, goal, cell_width, cell_height):
         self.position = start
         self.start = start
-        self.goal = goal
+        self.goal_y, self.goal_x = goal
         self.radius = min(cell_width, cell_height) // 6
         self.steps_taken = 0
         self.is_alive = True
 
     def think(self, maze):
         movements = [self.move_up, self.move_down, self.move_left, self.move_right]
-        ray_cast_inputs = self.ray_cast_inputs(maze)
-        print(ray_cast_inputs)
+        neural_inputs = self.neural_inputs(maze)
+
+        print(neural_inputs)
         # random_movement = random.choice(movements)
         # random_movement(maze)
-        #todo
+
 
     def cast_ray(self, maze, dx, dy):
         y, x = self.position
@@ -32,12 +33,17 @@ class Agent:
 
         return max_steps  # Return max_steps if no collision detected within the limit
 
-    def ray_cast_inputs(self, maze):
+    def neural_inputs(self, maze):
+        position_y, position_x = self.position
         inputs = [
             self.cast_ray(maze, -1, 0),  # Left
             self.cast_ray(maze, 1, 0),  # Right
             self.cast_ray(maze, 0, -1),  # Up
-            self.cast_ray(maze, 0, 1)  # Down
+            self.cast_ray(maze, 0, 1),  # Down
+            self.goal_x,
+            self.goal_y,
+            position_x,
+            position_y
         ]
         return inputs
 
