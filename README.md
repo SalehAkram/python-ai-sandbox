@@ -4,48 +4,67 @@
 [![Tests](https://github.com/SalehAkram/python-ai-sandbox/actions/workflows/tests.yml/badge.svg)](https://github.com/SalehAkram/python-ai-sandbox/actions/workflows/tests.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-A growing collection of interactive AI experiments built from first principles with Python, NumPy, and Pygame. Each project explores a learning technique in a visual environment while the reusable algorithms live in a shared library.
+A growing collection of interactive AI experiments built from first principles with Python, NumPy, and Pygame. Each project explores a learning technique in a visual environment, while reusable neural-network and evolutionary components live in a shared library.
 
-## Projects
+## Maze Runner: neuroevolution in action
 
-| Project | Technique | Status |
-|---|---|---|
-| **Maze Runner** | Neural networks + neuroevolution | Complete and tested |
-| Space Invaders | Reinforcement learning / neuroevolution | Planned |
+![A population of neural-network agents evolving through the maze](docs/assets/maze_runner/maze-runner-evolution.gif)
 
-## Maze Runner
+Maze Runner evolves a population of neural-network-controlled agents without backpropagation, labelled examples, or a hand-written route. Agents perceive the environment, choose movement actions, receive fitness scores, and pass successful parameters into the next generation through selection, crossover, and Gaussian mutation.
 
-A neural network learns to navigate a maze without backpropagation, labelled data, or a hand-written route. A genetic algorithm evaluates a population of agents, selects the strongest controllers, and creates new generations through crossover and Gaussian mutation.
+The deterministic reference experiment uses **150 agents per generation**. With seed `42`, it evolves an optimal **16-step solution at generation 94**.
 
-**Reproducible result:** the default seeded experiment evolves an agent that follows the maze's optimal **11-step path**, typically within the first few generations. Seed `42` solved it at generation `7` in the reference run.
+![The evolved champion completing the optimal route](docs/assets/maze_runner/maze-runner-champion.gif)
 
-## Why this project matters
-
-This compact project demonstrates AI fundamentals and production-minded Python engineering:
+## What this demonstrates
 
 - A feed-forward multilayer perceptron implemented directly with NumPy
-- Neuroevolution with elitism, fitness-weighted selection, uniform crossover, and mutation
-- Ray-cast environmental sensing and normalized spatial features
-- Dense fitness shaping based on shortest-path progress, exploration, efficiency, and collision penalties
+- Neuroevolution with elitism, fitness-weighted selection, uniform crossover, and Gaussian mutation
+- Ray-cast wall sensing and normalized spatial inputs
+- Fitness shaping based on progress, exploration, collisions, and repeated visits
 - Deterministic experiments through seeded random-number generation
-- Headless high-speed training separated from Pygame visualization
-- Compressed model persistence and an automated regression test suite
+- Live Pygame population visualisation without affecting training results
+- Model persistence, reproducible GIF export, automated tests, and CI
 
 ## How it works
 
 ```mermaid
 flowchart LR
-    S["8 inputs: wall rays, goal delta, position"] --> N["8-16-4 neural network"]
-    N --> A["Action: up, down, left, right"]
-    A --> M["Maze environment"]
-    M --> F["Fitness evaluation"]
-    F --> G["Selection + crossover + mutation"]
-    G --> N
+    E["Maze environment"] --> I["8 inputs<br/>4 wall rays + goal delta + position"]
+    I --> N["8 → 16 → 4<br/>feed-forward neural network"]
+    N --> A["Action<br/>up, down, left, or right"]
+    A --> E
+    E --> F["Fitness score"]
+    F --> S["Selection and elitism"]
+    S --> C["Crossover and mutation"]
+    C --> N
 ```
 
-Each agent observes four wall distances, its relative goal position, and its current position. The network's four outputs represent movement actions. A breadth-first search distance map provides informative fitness feedback while never revealing the route to the controller itself.
+Each agent receives eight normalized values:
 
-The best networks survive unchanged (elitism). Other high-performing networks become parents; their weights and biases are recombined and mutated to form the next generation.
+1. Open distance in four directions
+2. Horizontal and vertical displacement from the goal
+3. Current horizontal and vertical position
+
+The network produces four output scores. The highest score selects the next movement direction. A breadth-first-search distance map helps calculate fitness, but it is never given to the network as an input—the agent must act using only its sensors and position.
+
+After every generation, the best networks survive unchanged. Other strong networks become parents, and their weights and biases are recombined and mutated to create the next population.
+
+## Training signal
+
+Fitness rewards:
+
+- Best progress toward the goal
+- Unique cells explored
+- Reaching the goal
+- Solving the maze efficiently
+
+Fitness penalizes:
+
+- Attempts to move through walls
+- Repeated visits and unproductive loops
+
+The live swarm view makes those behaviours visible: early agents collide, loop, and enter dead ends; later generations increasingly follow productive routes.
 
 ## Quick start
 
@@ -53,26 +72,41 @@ Requires Python 3.11 or newer.
 
 ```bash
 python -m venv .venv
+
 # Windows
 .venv\Scripts\activate
-# macOS/Linux: source .venv/bin/activate
+
+# macOS/Linux
+source .venv/bin/activate
+
 pip install -r requirements.txt
-python -m projects.maze_runner train --stop-when-solved
 ```
 
-Training runs headlessly and saves the best controller to `artifacts/maze_runner/champion.npz`.
+Train headlessly and stop at the first successful generation:
 
-Replay it in Pygame:
+```bash
+python -m projects.maze_runner train --generations 300 --population 150 --steps 80 --seed 42 --stop-when-solved
+```
+
+Watch sampled generations as a live population:
+
+```bash
+python -m projects.maze_runner train --generations 300 --population 150 --steps 80 --seed 42 --stop-when-solved --show-training
+```
+
+Replay a saved champion:
 
 ```bash
 python -m projects.maze_runner replay artifacts/maze_runner/champion.npz
 ```
 
-Or train and immediately visualize the champion:
+Regenerate the portfolio GIFs from the seeded experiment:
 
 ```bash
-python -m projects.maze_runner train --generations 200 --population 150 --seed 42 --visualize
+python -m projects.maze_runner.export_gifs
 ```
+
+### Training options
 
 | Option | Default | Purpose |
 |---|---:|---|
@@ -81,41 +115,58 @@ python -m projects.maze_runner train --generations 200 --population 150 --seed 4
 | `--steps` | 80 | Movement budget per agent |
 | `--seed` | 42 | Reproducible random seed |
 | `--stop-when-solved` | off | Stop when any agent reaches the goal |
-| `--output` | `artifacts/maze_runner/champion.npz` | Champion model path |
-
-## Validation
-
-```bash
-python -m unittest discover -v
-```
-
-Tests cover sensor geometry, movement and collisions, network inference, mutation, model serialization, population stability, and deterministic training. GitHub Actions runs the suite on every push and pull request.
+| `--show-training` | off | Display sampled population evaluations |
+| `--training-interval` | 10 | Animate every Nth generation |
+| `--training-fps` | 60 | Population animation frames per second |
+| `--visualize` | off | Replay the champion after training |
+| `--output` | `artifacts/maze_runner/champion.npz` | Saved champion path |
 
 ## Project structure
 
 ```text
 projects/
-  maze_runner/          Environment, agent, fitness, training, and CLI
+  maze_runner/
+    agent.py                 Sensors, movement, fitness, and rendering
+    maze.py                  Environment, distance map, and maze rendering
+    evolution.py             Evaluation and generation orchestration
+    training_visualizer.py   Live swarm and training statistics
+    export_gifs.py           Deterministic portfolio-media export
+    __main__.py              Training and replay CLI
 shared/
-  neural_networks/      Reusable neural-network implementation
-  neuroevolution/       Reusable selection, crossover, and mutation
-tests/                  Unit and reproducibility tests
+  neural_networks/           Reusable feed-forward neural network
+  neuroevolution/            Selection, crossover, and mutation
+tests/                       Unit and reproducibility tests
+docs/assets/maze_runner/     README GIFs
 ```
 
-## Design choices
+## Validation
 
-**Why neuroevolution?** It makes optimization visible and intuitive while solving a sequential-control problem without gradients. Every network parameter is part of the genome.
+```bash
+python -m unittest discover -s tests -v
+```
 
-**Why a distance map in fitness?** Sparse success-only rewards make early evolution needlessly slow. Shortest-path distance supplies a learning signal to the genetic algorithm, but the controller receives only its sensor inputs.
+The tests cover sensor geometry, movement and collisions, fitness behaviour, network inference, mutation, model serialization, population stability, and deterministic training. GitHub Actions runs the suite on every push and pull request.
 
-**Why separate training and rendering?** Headless evaluation is faster and easy to test in CI; Pygame remains an optional presentation layer for inspecting a trained policy.
+## Design decisions
 
-## Future extensions
+**Why neuroevolution?** It makes optimization visible and intuitive. Every weight and bias becomes part of the genome, so controllers can evolve without gradients.
 
-- Evaluate generalization across procedurally generated mazes
-- Run population evaluation across CPU cores
-- Add fitness-history plots and replay export to GIF
-- Compare genetic optimization against reinforcement-learning baselines
+**Why dense fitness feedback?** A success-only reward is too sparse for early generations. Progress and exploration create useful selection pressure before any agent completes the maze.
+
+**Why separate training from rendering?** Headless training is faster and CI-friendly. Visual observation is optional, and regression checks confirm that enabling it does not change the deterministic result.
+
+**Why sample generations?** Rendering all 80 steps of every generation would make the demonstration unnecessarily long. The live view and exported GIF sample milestones while preserving the authentic agent trajectories.
+
+## Current limitations
+
+The champion is optimized for one fixed maze and starting position. The feed-forward controller has no memory, and this project does not yet test generalization across unseen mazes. These are deliberate boundaries for the first experiment rather than claims of a general maze-solving system.
+
+## Roadmap
+
+- Add independently authored neuroevolution projects, beginning with Flappy Bird
+- Evaluate controllers across procedurally generated environments
+- Compare genetic optimization with reinforcement-learning baselines
+- Explore recurrent networks for memory-dependent behaviour
 
 ## License
 

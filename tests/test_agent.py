@@ -17,12 +17,12 @@ class AgentTests(unittest.TestCase):
     def test_rays_measure_open_cells_before_a_wall(self):
         agent = Agent((1, 1), self.maze.goal_position)
         self.assertEqual(agent.cast_ray(self.maze, -1, 0), 0)
-        self.assertEqual(agent.cast_ray(self.maze, 1, 0), 5)
+        self.assertEqual(agent.cast_ray(self.maze, 1, 0), 0)
 
     def test_valid_move_updates_position(self):
-        agent = Agent((1, 1), self.maze.goal_position, brain=FixedBrain(3))
+        agent = Agent((1, 1), self.maze.goal_position, brain=FixedBrain(1))
         agent.think(self.maze)
-        self.assertEqual(agent.position, (1, 2))
+        self.assertEqual(agent.position, (2, 1))
         self.assertEqual(agent.steps_taken, 1)
 
     def test_wall_collision_is_penalized_without_killing_agent(self):

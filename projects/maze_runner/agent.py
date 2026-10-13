@@ -12,6 +12,7 @@ class Agent:
         self.radius = min(cell_width, cell_height) // 6
         self.brain = brain or NeuralNetwork(8, 16, 4, rng=rng)
         self.steps_taken, self.invalid_moves = 0, 0
+        self.last_action, self.last_move_valid = None, None
         self.reached_goal, self.is_alive = False, True
         self.path = [start]
 
@@ -38,6 +39,7 @@ class Agent:
 
     def think(self, maze):
         action = int(np.argmax(self.brain.feedforward(self.neural_inputs(maze))))
+        self.last_action = action
         self.move(maze, MOVES[action])
         return action
 
@@ -48,12 +50,14 @@ class Agent:
         candidate = (row + delta[0], col + delta[1])
         self.steps_taken += 1
         if maze.is_open(candidate):
+            self.last_move_valid = True
             self.position = candidate
             self.path.append(candidate)
             self.reached_goal = candidate == self.goal
             if self.reached_goal:
                 self.is_alive = False
         else:
+            self.last_move_valid = False
             self.invalid_moves += 1
 
     def move_up(self, maze): self.move(maze, MOVES[0])

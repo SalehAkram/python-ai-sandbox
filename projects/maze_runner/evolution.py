@@ -42,8 +42,27 @@ class EvolutionTrainer:
             agent.think(self.maze)
         return agent, agent.fitness(self.distances, self.max_steps)
 
-    def run_generation(self, generation):
-        evaluated = [(brain, *self.evaluate(brain)) for brain in self.population]
+    def run_generation(self, generation, step_callback=None):
+        if step_callback:
+            agents = [
+                Agent(self.start, self.maze.goal_position,
+                      self.maze.cell_width, self.maze.cell_height, brain=brain)
+                for brain in self.population
+            ]
+            step_callback(generation, 0, agents)
+            for step in range(1, self.max_steps + 1):
+                active_agents = [agent for agent in agents if agent.is_alive]
+                if not active_agents:
+                    break
+                for agent in active_agents:
+                    agent.think(self.maze)
+                step_callback(generation, step, agents)
+            evaluated = [
+                (brain, agent, agent.fitness(self.distances, self.max_steps))
+                for brain, agent in zip(self.population, agents)
+            ]
+        else:
+            evaluated = [(brain, *self.evaluate(brain)) for brain in self.population]
         evaluated.sort(key=lambda item: item[2], reverse=True)
         best_brain, best_agent, best_score = evaluated[0]
         if best_score > self.best_fitness:
@@ -62,10 +81,11 @@ class EvolutionTrainer:
             self.mutation_rate, self.mutation_scale, self.rng,
         )
 
-    def train(self, generations, callback=None, stop_when_solved=False):
+    def train(self, generations, callback=None, stop_when_solved=False,
+              step_callback=None):
         history = []
         for generation in range(1, generations + 1):
-            stats, champion = self.run_generation(generation)
+            stats, champion = self.run_generation(generation, step_callback)
             history.append(stats)
             if callback:
                 callback(stats, champion)

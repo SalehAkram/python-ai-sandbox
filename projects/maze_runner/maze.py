@@ -17,19 +17,20 @@ GOAL_CORE_COLOR = (170, 255, 210)
 
 
 DEFAULT_CELLS = (
-    (1, 1, 1, 1, 1, 1, 1, 1),
-    (1, 0, 0, 0, 0, 0, 0, 1),
-    (1, 0, 1, 1, 1, 1, 0, 1),
-    (1, 0, 1, 0, 0, 0, 0, 1),
-    (1, 0, 1, 0, 1, 1, 1, 1),
-    (1, 0, 0, 0, 0, 0, 0, 0),
-    (1, 1, 1, 1, 1, 1, 1, 0),
-    (1, 1, 1, 1, 1, 1, 1, 1),
+    (1, 1, 1, 1, 1, 1, 1, 1, 1),
+    (1, 0, 1, 0, 0, 0, 0, 0, 1),
+    (1, 0, 1, 1, 1, 0, 1, 0, 1),
+    (1, 0, 0, 0, 1, 0, 1, 0, 1),
+    (1, 0, 1, 0, 1, 1, 1, 0, 1),
+    (1, 0, 1, 0, 1, 0, 0, 0, 1),
+    (1, 1, 1, 0, 1, 0, 1, 0, 1),
+    (1, 0, 0, 0, 0, 0, 1, 0, 1),
+    (1, 1, 1, 1, 1, 1, 1, 1, 1),
 )
 
 
 class Maze:
-    def __init__(self, width=640, height=640, goal_position=(6, 7), cells=DEFAULT_CELLS):
+    def __init__(self, width=640, height=640, goal_position=(7, 7), cells=DEFAULT_CELLS):
         self.width, self.height = width, height
         self.cells = [list(row) for row in cells]
         self.goal_position = goal_position

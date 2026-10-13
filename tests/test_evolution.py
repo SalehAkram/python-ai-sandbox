@@ -18,5 +18,17 @@ class EvolutionTests(unittest.TestCase):
         scores_b = [item.best_fitness for item in second.train(3)]
         self.assertEqual(scores_a, scores_b)
 
+    def test_observing_steps_does_not_change_training(self):
+        headless = EvolutionTrainer(Maze(), population_size=10, max_steps=8, seed=3)
+        observed = EvolutionTrainer(Maze(), population_size=10, max_steps=8, seed=3)
+
+        headless_history = headless.train(3)
+        observed_history = observed.train(
+            3,
+            step_callback=lambda _generation, _step, _agents: None,
+        )
+
+        self.assertEqual(headless_history, observed_history)
+
 
 if __name__ == "__main__": unittest.main()
