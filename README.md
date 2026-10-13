@@ -161,13 +161,6 @@ The tests cover sensor geometry, movement and collisions, fitness behaviour, net
 
 The champion is optimized for one fixed maze and starting position. The feed-forward controller has no memory, and this project does not yet test generalization across unseen mazes. These are deliberate boundaries for the first experiment rather than claims of a general maze-solving system.
 
-## Roadmap
-
-- Add independently authored neuroevolution projects, beginning with Flappy Bird
-- Evaluate controllers across procedurally generated environments
-- Compare genetic optimization with reinforcement-learning baselines
-- Explore recurrent networks for memory-dependent behaviour
-
 ## License
 
 Released under the [MIT License](LICENSE).
