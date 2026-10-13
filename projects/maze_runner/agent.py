@@ -62,15 +62,63 @@ class Agent:
     def move_right(self, maze): self.move(maze, MOVES[3])
 
     def fitness(self, distances, max_steps):
-        distance = distances.get(self.position, max(distances.values()) + 1)
-        progress = distances[self.start] - distance
-        score = progress * 15.0 + len(set(self.path)) * 2.0 - self.invalid_moves * 0.5
+        unique_cells = len(set(self.path))
+        repeated_visits = len(self.path) - unique_cells
+        best_distance = min(
+            distances.get(position, max(distances.values()) + 1)
+            for position in self.path
+        )
+        progress = distances[self.start] - best_distance
+        score = (progress * 15.0 + unique_cells * 2.0
+                 - self.invalid_moves * 0.5 - repeated_visits * 0.5)
         if self.reached_goal:
             score += 1_000 + (max_steps - self.steps_taken) * 5
         return max(0.01, score)
 
-    def draw(self, screen, cell_width, cell_height, color=(255, 85, 85)):
+    def draw(self, screen, cell_width, cell_height, color=(255, 112, 72)):
         import pygame
+
+        def cell_center(position):
+            path_row, path_col = position
+            return (path_col * cell_width + cell_width // 2,
+                    path_row * cell_height + cell_height // 2)
+
         row, col = self.position
-        center = (col * cell_width + cell_width // 2, row * cell_height + cell_height // 2)
-        pygame.draw.circle(screen, color, center, self.radius)
+        center = cell_center((row, col))
+
+        # A translucent overlay lets the trail and glow fade into the maze floor.
+        effects = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
+        recent_path = self.path[-10:]
+        for index in range(1, len(recent_path)):
+            alpha = int(30 + 100 * index / len(recent_path))
+            pygame.draw.line(
+                effects,
+                (*color, alpha),
+                cell_center(recent_path[index - 1]),
+                cell_center(recent_path[index]),
+                width=max(2, self.radius // 3),
+            )
+
+        pygame.draw.circle(effects, (*color, 28), center, self.radius * 2)
+        pygame.draw.circle(effects, (*color, 55), center, self.radius + 6)
+        screen.blit(effects, (0, 0))
+
+        # Dark shell, illuminated ring and central processor core.
+        pygame.draw.circle(screen, (8, 16, 28), center, self.radius + 2)
+        pygame.draw.circle(screen, color, center, self.radius, width=3)
+        pygame.draw.circle(screen, (255, 205, 120), center,
+                           max(4, self.radius // 2))
+        pygame.draw.circle(screen, (255, 250, 220), center,
+                           max(2, self.radius // 5))
+
+        # Point toward the most recent successful movement direction.
+        if len(self.path) > 1:
+            previous_row, previous_col = self.path[-2]
+            direction = (col - previous_col, row - previous_row)
+            indicator_end = (
+                center[0] + direction[0] * (self.radius + 7),
+                center[1] + direction[1] * (self.radius + 7),
+            )
+            pygame.draw.line(screen, (255, 245, 205), center,
+                             indicator_end, width=3)
+            pygame.draw.circle(screen, color, indicator_end, 3)

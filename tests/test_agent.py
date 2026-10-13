@@ -32,5 +32,29 @@ class AgentTests(unittest.TestCase):
         self.assertEqual(agent.invalid_moves, 1)
         self.assertTrue(agent.is_alive)
 
+    def test_fitness_remembers_best_progress(self):
+        agent = Agent((1, 1), self.maze.goal_position)
+        agent.path = [(1, 1), (2, 1), (3, 1), (2, 1), (1, 1)]
+        agent.position = (1, 1)
+
+        score = agent.fitness(self.maze.distances_to_goal(), max_steps=80)
+
+        self.assertGreater(score, 30.0)
+
+    def test_fitness_penalizes_repeated_visits(self):
+        direct = Agent((1, 1), self.maze.goal_position)
+        direct.path = [(1, 1), (1, 2), (1, 3)]
+        direct.position = (1, 3)
+
+        looping = Agent((1, 1), self.maze.goal_position)
+        looping.path = [(1, 1), (1, 2), (1, 3), (1, 2), (1, 3)]
+        looping.position = (1, 3)
+
+        distances = self.maze.distances_to_goal()
+        self.assertLess(
+            looping.fitness(distances, max_steps=80),
+            direct.fitness(distances, max_steps=80),
+        )
+
 
 if __name__ == "__main__": unittest.main()
