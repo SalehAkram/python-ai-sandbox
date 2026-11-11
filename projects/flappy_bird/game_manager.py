@@ -16,7 +16,7 @@ class GameManager:
     def __init__(self):
         # Initialise Pygame before creating the display and game objects.
         pygame.init()
-        self._screen = pygame.display.set_mode((480, 640))
+        self._screen = pygame.display.set_mode((960, 640))
         pygame.display.set_caption("Flappy Bird")
         self._clock = pygame.time.Clock()
 
@@ -24,21 +24,38 @@ class GameManager:
         self._state = GameState.Ready
         self._score = 0
 
-        self._bird = Bird()
+        self._bird = Bird(100, 280)
         self._pipe_pairs: List[PipePair] = []
         self._ground = ScrollingGround()
 
     def run(self):
-        pass
+        self._running = True
+
+        try:
+            while self._running:
+                delta_time = self._clock.tick(60) / 1000.0
+
+                self.handle_events()
+                if not self._running:
+                    break
+
+                self.update(delta_time)
+                self.render()
+        finally:
+            pygame.quit()
 
     def handle_events(self):
-        pass
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self._running = False
 
     def update(self, delta_time: float):
         pass
 
     def render(self):
-        pass
+        self._screen.fill((135, 206, 235))
+        self._bird.draw(self._screen)
+        pygame.display.flip()
 
     def restart(self):
         pass
