@@ -50,7 +50,7 @@ class GameManager:
                 self._running = False
 
     def update(self, delta_time: float):
-        pass
+        self._bird.update(delta_time)
 
     def render(self):
         self._screen.fill((135, 206, 235))

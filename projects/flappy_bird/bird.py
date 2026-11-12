@@ -41,7 +41,11 @@ class Bird:
         pass
 
     def update(self, dt: float):
-        pass
+        self._animation_timer += dt
+
+        while self._animation_timer >= self._frame_duration:
+            self._animation_timer -= self._frame_duration
+            self._current_frame_index = (self._current_frame_index + 1) % len(self._animation_frames)
 
     def draw(self, surface):
         current_frame = self._animation_frames[self._current_frame_index]
