@@ -38,14 +38,20 @@ class Bird:
             self._animation_frames.append(scaled_image)
 
     def flap(self):
-        pass
+        self._vertical_velocity = self._flap_velocity
 
     def update(self, dt: float):
+        self._move_bird(dt)
         self._animation_timer += dt
 
         while self._animation_timer >= self._frame_duration:
             self._animation_timer -= self._frame_duration
             self._current_frame_index = (self._current_frame_index + 1) % len(self._animation_frames)
+
+    def _move_bird(self, dt: float):
+        self._vertical_velocity += self._gravity * dt
+        self._position_y += self._vertical_velocity * dt
+        self._collision_bound = pygame.Rect(self._position_x, self._position_y, self._width, self._height)
 
     def draw(self, surface):
         current_frame = self._animation_frames[self._current_frame_index]

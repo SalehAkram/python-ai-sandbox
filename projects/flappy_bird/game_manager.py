@@ -48,6 +48,8 @@ class GameManager:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self._running = False
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                self._bird.flap()
 
     def update(self, delta_time: float):
         self._bird.update(delta_time)
