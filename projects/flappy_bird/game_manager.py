@@ -57,6 +57,7 @@ class GameManager:
     def render(self):
         self._screen.fill((135, 206, 235))
         self._bird.draw(self._screen)
+        self._ground.draw(self._screen)
         pygame.display.flip()
 
     def restart(self):
