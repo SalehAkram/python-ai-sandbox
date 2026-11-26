@@ -4,7 +4,9 @@ import pygame
 
 
 class ScrollingGround:
-    def __init__(self):
+    def __init__(self, scroll_speed=120.0):
+        self._scroll_offset = 0.0
+        self._scroll_speed = scroll_speed
         image_path = (
                 Path(__file__).resolve().parent
                 / "assets" / "images" / "ground" / "ground_strip.png"
@@ -21,8 +23,15 @@ class ScrollingGround:
             image, (self._strip_width, self._height)
         )
 
+    def update(self, dt: float):
+        # Keep the offset between one strip left of the screen and zero.
+        self._scroll_offset = -(
+            (-self._scroll_offset + self._scroll_speed * dt) % self._strip_width
+        )
+
     def draw(self, surface):
         ground_top = surface.get_height() - self._height
 
-        for x in range(0, surface.get_width(), self._strip_width):
-            surface.blit(self._image, (x, ground_top))
+        # Include an extra strip to cover the right edge as the ground moves left.
+        for x in range(0, surface.get_width() + self._strip_width, self._strip_width):
+            surface.blit(self._image, (x + round(self._scroll_offset), ground_top))

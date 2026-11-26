@@ -26,7 +26,7 @@ class GameManager:
 
         self._bird = Bird(100, 280)
         self._pipe_pairs: List[PipePair] = []
-        self._ground = ScrollingGround()
+        self._ground = ScrollingGround(scroll_speed=120.0)
 
     def run(self):
         self._running = True
@@ -53,6 +53,7 @@ class GameManager:
 
     def update(self, delta_time: float):
         self._bird.update(delta_time)
+        self._ground.update(delta_time)
 
     def render(self):
         self._screen.fill((135, 206, 235))
