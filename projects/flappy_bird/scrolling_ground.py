@@ -13,8 +13,11 @@ class ScrollingGround:
         )
 
         image = pygame.image.load(str(image_path)).convert_alpha()
-        # Remove empty transparent space above the grass.
-        image = image.subsurface(image.get_bounding_rect())
+        # Ignore almost invisible pixels above the grass when cropping.
+        # Alpha ranges from 0 (transparent) to 255 (opaque).
+        visible_bounds = image.get_bounding_rect(min_alpha=128)
+        image = image.subsurface((0, visible_bounds.top, image.get_width(),
+                                  image.get_height() - visible_bounds.top))
 
         self._height = 96
         # Preserve the artwork's proportions instead of stretching it.
@@ -22,12 +25,18 @@ class ScrollingGround:
         self._image = pygame.transform.smoothscale(
             image, (self._strip_width, self._height)
         )
+    @property
+    def grounds_height(self):
+        return self._height
 
     def update(self, dt: float):
         # Keep the offset between one strip left of the screen and zero.
         self._scroll_offset = -(
             (-self._scroll_offset + self._scroll_speed * dt) % self._strip_width
         )
+
+    def reset(self):
+        self._scroll_offset = 0.0
 
     def draw(self, surface):
         ground_top = surface.get_height() - self._height
